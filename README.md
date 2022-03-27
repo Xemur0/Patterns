@@ -1,1 +1,2 @@
 # Patterns
+Simple server
