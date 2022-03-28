@@ -1,3 +1,3 @@
 # Patterns
 Simple server
-Run server from run.py, just start it
+Run server from <b>run.py</b>
