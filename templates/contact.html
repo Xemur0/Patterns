@@ -22,12 +22,32 @@
             </ul>
 
         <div class="content_contact">
-            <p>Всю сопуствующую информацию Вы можете получить, написав
-                нам на адрес <a href="mailto:test@test.mail.ru">
-                test@test.mail.ru</a>
-            </p>
 
-        
+            <section class="contact_form">
+
+                <div class="contact_wrapper">
+                    <h1>Свяжитесь с нами</h1>
+                <p>Все вопросы, которые у Вас возникли, вы можете направить
+                    нам на почту
+                </p>
+
+                    <form action="/send_info/" method="post">
+                        <div class="form_inputs">
+                            <p>Name <span class="red">*</span><input name="name"></p>
+
+                            <p>Email <span class="red">*</span><input type="email" name="email"></p>
+
+                        </div>
+
+                        <p>Your message <span class="red">*</span></p>
+                        <textarea name="text"></textarea>
+                        <div class="button_block">
+                            <input type="submit" value="SEND">
+                        </div>
+                    </form>
+                </div>
+
+            </section>
         </div>
 
 
