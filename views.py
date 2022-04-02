@@ -32,3 +32,9 @@ class Default_page:
     """Страница по-умолчанию"""
     def __call__(self, request):
         return '200 OK', render_template('index.html')
+
+@Routing(routes=routes, url='/send_info/')
+class SendInfo:
+    def __call__(self, request):
+
+        return '200 OK', render_template('contact.html')

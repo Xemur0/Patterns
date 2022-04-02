@@ -1,5 +1,6 @@
 import os
 import quopri
+
 from helper.content_types import CONTENT_TYPES_MAP
 from concert_framework.concert_requests import Post_Requests, Get_Requests
 
@@ -27,13 +28,17 @@ class ConcertFramework:
         request['method'] = method
 
         if method == 'POST':
-            data = Post_Requests().get_request_params(environ)
+            data = Post_Requests().get_wsgi_input_data(environ)
             request['data'] = data
+
+        if path == '/send_info/':
+            result = Post_Requests().parse_wsgi_input_data(data)
+            result_decode = self.decode_value(result)
+            print(result_decode)
 
         if method == 'GET':
             request_params = Get_Requests().get_request_params(environ)
             request['request_params'] = request_params
-
 
         if path in self.routes:
             view = self.routes[path]
