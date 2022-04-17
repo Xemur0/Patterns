@@ -6,6 +6,7 @@ from concert_framework.concert_requests import Post_Requests, Get_Requests
 
 
 class PageNotFound404:
+    """Страница не найдена"""
     def __call__(self, request):
         return '404', '404 Page not found'
 
@@ -28,10 +29,12 @@ class ConcertFramework:
         request['method'] = method
 
         if method == 'POST':
-            data = Post_Requests().get_wsgi_input_data(environ)
+            data = Post_Requests().get_request_params(environ)
             request['data'] = data
 
-        if path == '/send_info/':
+        elif method == 'POST' and path == '/send_info/':
+            data = Post_Requests().get_wsgi_input_data(environ)
+            request['data'] = data
             result = Post_Requests().parse_wsgi_input_data(data)
             result_decode = self.decode_value(result)
             print(result_decode)

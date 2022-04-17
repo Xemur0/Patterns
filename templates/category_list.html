@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block main_block %}
+
+    <div class="content_prices">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Вид</th>
+                    <th>Описание</th>
+
+                {% for item in objects_list %}
+                <tr>
+                    <th>{{item.id}}</th>
+                    <th><a href="/create_service/?id={{item.id}}">{{item.name}}</a></th>
+                    <th>{{item.description}}</th>
+
+                </tr>
+                {% endfor %}
+
+
+            </table>
+
+
+        </div>
+
+
+
+{% endblock %}
