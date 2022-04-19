@@ -2,35 +2,45 @@
 
 {% block main_block %}
 
-        <div class="content_prices">
-            <table>
-                <tr>
-                    <th>Вид услуги</th>
-                    <th>Стоимость</th>
+<div class="content_prices">
+    <table>
+        <tr>
+            <th>Категория</th>
+            <th>Вид услуги</th>
+            <th>Стоимость</th>
 
 
+        </tr>
 
 
-                <tr>
-                    <th><a href="#">Standart</a></th>
-                    <th>100.000</th>
-
-                </tr>
-                <tr>
-                    <th><a href="#">Lux</a></th>
-                    <th>200.000</th>
-
-                </tr>
-                <tr>
-                    <th><a href="#">Top of the Top</a></th>
-                    <th>300.000</th>
-
-                </tr>
-
-            </table>
+        {% for item in objects_list %}
+        <tr>
 
 
-        </div>
+            <th><a href="/prices/?id={{item.category.id}}">{{item.category.name}}</a>
+            </th>
+            <th>{{item.name}}</th>
+            <th>{{item.price}}</th>
+
+
+        </tr>
+
+        {% endfor %}
+
+
+    </table>
+    <div class="copy">
+        {% for item in objects_list %}
+        <li>
+            {{item.name}} <span><a href="/copy_service/?name={{item.name}}">скопировать</a></span>
+        </li>
+        {% endfor %}
+
+        </form>
+    </div>
+
+
+</div>
 
 
 {% endblock %}

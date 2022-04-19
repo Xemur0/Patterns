@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block main_block %}
+
+<div class="content_about_price">
+    <h1>Создание услуги для '{{name}}'</h1>
+
+
+    <form method="post">
+        <input type="text" name="name" placeholder="Название">
+        <input type="text" name="price" placeholder="Цена">
+
+
+        {% if categories %}
+        <p>Категория
+            <select name="category">
+                {% for item in categories %}
+                <option>{{ item.id }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        {% endif %}
+
+        <button type="submit">Сохранить</button>
+    </form>
+</div>
+
+
+{% endblock %}
