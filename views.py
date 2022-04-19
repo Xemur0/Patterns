@@ -1,5 +1,5 @@
 from concert_framework.templator import render_template
-from helper.decorators import Routing
+from helper.decorators import Routing, Debug
 from pattern.creational_patterns import Engine, Logger
 
 site = Engine()
@@ -13,7 +13,7 @@ site.categories.append(site.create_category('ZVUK', 'test', 0))
 @Routing(routes=routes, url='/home/')
 class Home:
     """Основная странциа"""
-
+    @Debug(name="Home")
     def __call__(self, request):
         return '200 OK', render_template('index.html')
 
@@ -22,6 +22,7 @@ class Home:
 class About:
     """Страница 'о нас' """
 
+    @Debug(name="About")
     def __call__(self, request):
         return '200 OK', render_template('about.html')
 
@@ -30,6 +31,7 @@ class About:
 class Contact:
     """Страница контактов """
 
+    @Debug(name="Contact")
     def __call__(self, request):
         return '200 OK', render_template('contact.html')
 
@@ -38,6 +40,7 @@ class Contact:
 class Default_page:
     """Страница по-умолчанию"""
 
+    @Debug(name="Home")
     def __call__(self, request):
         return '200 OK', render_template('index.html')
 
@@ -45,6 +48,8 @@ class Default_page:
 @Routing(routes=routes, url='/send_info/')
 class SendInfo:
     """Форма обратной связи """
+
+    @Debug(name="Send info")
     def __call__(self, request):
         return '200 OK', render_template('contact.html')
 
@@ -52,6 +57,8 @@ class SendInfo:
 @Routing(routes=routes, url='/prices/')
 class ServiceList:
     """Список услуг"""
+
+    @Debug(name="Service List")
     def __call__(self, request):
         if request['request_params'] == {}:
 
@@ -73,8 +80,11 @@ class ServiceList:
 @Routing(routes=routes, url='/category_list/')
 class CategoryList:
     """Список категорий"""
+
+    @Debug(name="Category List")
     def __call__(self, request):
         logger.log('Список категорий')
+
         return '200 OK', render_template('category_list.html',
                                          objects_list=site.categories)
 
@@ -82,6 +92,8 @@ class CategoryList:
 @Routing(routes=routes, url='/create_category/')
 class CreateCategory:
     """Создать категорию"""
+
+    @Debug(name="Create Category")
     def __call__(self, request):
 
         if request['method'] == 'POST':
@@ -117,6 +129,7 @@ class CreateService:
     """Создание услуги"""
     category_id = -1
 
+    @Debug(name="Create Service")
     def __call__(self, request):
         if request['method'] == 'POST':
             data = request['data']
@@ -154,6 +167,8 @@ class CreateService:
 @Routing(routes=routes, url='/copy_service/')
 class CopyService:
     """Скопировать услугу"""
+
+    @Debug(name="Cope Service")
     def __call__(self, request):
         request_params = request['request_params']
 
