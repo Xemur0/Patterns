@@ -90,3 +90,25 @@ class ConcertFramework:
             val_decode_str = quopri.decodestring(val).decode('UTF-8')
             new_data[k] = val_decode_str
         return new_data
+
+
+class DebugApplication(ConcertFramework):
+
+    def __init__(self, routes, settings):
+        self.application = ConcertFramework(routes, settings)
+        super().__init__(routes, settings)
+
+    def __call__(self, env, start_response):
+        print('DEBUG MODE')
+        print(env)
+        return self.application(env, start_response)
+
+class FakeApplication(ConcertFramework):
+    """fake always send Hello"""
+    def __init__(self, routes, settings):
+        self.application = ConcertFramework(routes, settings)
+        super().__init__(routes, settings)
+
+    def __call__(self, env, start_response):
+        start_response('200 OK', [('Content-Type', 'text/html')])
+        return [b'Hello from Fake']
