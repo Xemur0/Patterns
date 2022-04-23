@@ -1,18 +1,23 @@
 from concert_framework.templator import render_template
 from helper.decorators import Routing, Debug
+from pattern.behavioral_patterns import BaseSerializer, ListView, \
+    CreateView, SmsNotifier, EmailNotifier
 from pattern.creational_patterns import Engine, Logger
 
 site = Engine()
 routes = {}
 logger = Logger('main')
+sms_notifier = SmsNotifier()
+email_notifier = EmailNotifier()
 
-#тестовая категория, внутри можно создать услуги
+# тестовая категория, внутри можно создать услуги
 site.categories.append(site.create_category('ZVUK', 'test', 0))
 
 
 @Routing(routes=routes, url='/home/')
 class Home:
     """Основная странциа"""
+
     @Debug(name="Home")
     def __call__(self, request):
         return '200 OK', render_template('index.html')
@@ -77,53 +82,6 @@ class ServiceList:
                 return '200 OK', 'No courses have been added yet'
 
 
-@Routing(routes=routes, url='/category_list/')
-class CategoryList:
-    """Список категорий"""
-
-    @Debug(name="Category List")
-    def __call__(self, request):
-        logger.log('Список категорий')
-
-        return '200 OK', render_template('category_list.html',
-                                         objects_list=site.categories)
-
-
-@Routing(routes=routes, url='/create_category/')
-class CreateCategory:
-    """Создать категорию"""
-
-    @Debug(name="Create Category")
-    def __call__(self, request):
-
-        if request['method'] == 'POST':
-            print(request)
-            data = request['data']
-
-            name = data['name']
-            name = site.decode_value(name)
-
-            category_id = data.get('category_id')
-
-            description = data['description']
-            description = site.decode_value(description)
-
-            category = None
-            if category_id:
-                category = site.find_category_by_id(int(category_id))
-
-            new_category = site.create_category(name, description, category)
-
-            site.categories.append(new_category)
-
-            return '200 OK', render_template('index.html',
-                                             objects_list=site.categories)
-        else:
-            categories = site.categories
-            return '200 OK', render_template('create_category.html',
-                                             categories=categories)
-
-
 @Routing(routes=routes, url='/create_service/')
 class CreateService:
     """Создание услуги"""
@@ -141,11 +99,15 @@ class CreateService:
             price = site.decode_value(price)
 
             category = None
+
             if self.category_id != -1:
                 category = site.find_category_by_id(int(self.category_id))
 
-                course = site.create_service('active', name, category, price)
-                site.services.append(course)
+                service = site.create_service('active', name, category, price)
+                category.observers.append(sms_notifier)
+                category.observers.append(email_notifier)
+                site.services.append(service)
+                category.add_service_to_nt()
 
             return '200 OK', render_template('prices.html',
                                              objects_list=category.services,
@@ -168,20 +130,78 @@ class CreateService:
 class CopyService:
     """Скопировать услугу"""
 
-    @Debug(name="Cope Service")
+    @Debug(name="Copy Service")
     def __call__(self, request):
         request_params = request['request_params']
 
         try:
             name = request_params['name']
-            old_course = site.get_course(name)
-            if old_course:
+            old_service = site.get_service(name)
+            if old_service:
                 new_name = f'copy_{name}'
-                new_course = old_course.clone()
-                new_course.name = new_name
-                site.services.append(new_course)
+                new_service = old_service.clone()
+                new_service.name = new_name
+                site.services.append(new_service)
 
             return '200 OK', render_template('prices.html',
                                              objects_list=site.services)
         except KeyError:
             return '200 OK', 'No courses have been added yet'
+
+
+@Routing(routes=routes, url='/category_list/')
+class CategoryListView(ListView):
+    queryset = site.categories
+    template_name = 'category_list.html'
+
+
+@Routing(routes=routes, url='/create_category/')
+class CreateCategory(CreateView):
+    template_name = 'create_category.html'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['category_list'] = site.categories
+        context['service_list'] = site.services
+
+        return context
+
+    def create_obj(self, data):
+        category_name = data['name']
+        category_name = site.decode_value(category_name)
+
+        description = data['description']
+        description = site.decode_value(description)
+
+        category = None
+
+        if category_name:
+            category = site.find_category_by_name(category_name)
+
+        if category == None or category not in site.categories:
+            new_category = site.create_category(category_name, description)
+            site.categories.append(new_category)
+
+
+@Routing(routes=routes, url='/api/')
+class SoundApi:
+    @Debug(name='CourseApi')
+    def __call__(self, request):
+        return '200 OK', BaseSerializer(site.categories).save()
+
+
+@Routing(routes=routes, url='/delete_service/')
+class DeleteService:
+    @Debug(name="Delete Service")
+    def __call__(self, request):
+        request_params = request['request_params']
+
+        try:
+            name = request_params['name']
+            service_to_delete = site.get_service(name)
+            site.services.remove(service_to_delete)
+
+            return '200 OK', render_template('prices.html',
+                                             objects_list=site.services)
+        except KeyError:
+            return '200 OK', 'No to delete'
