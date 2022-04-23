@@ -1,6 +1,8 @@
 import copy
 import quopri
 
+from pattern.behavioral_patterns import Subject
+
 
 class User:
     """Абстрактный пользователь"""
@@ -36,6 +38,7 @@ class ServicePrototype:
         return copy.deepcopy(self)
 
 
+
 class Service(ServicePrototype):
 
     def __init__(self, name, category, price):
@@ -55,25 +58,6 @@ class ProgressService(Service):
     pass
 
 
-class Category:
-    """Категория"""
-    auto_id = 0
-
-    def __init__(self, name, description, category):
-        self.id = Category.auto_id
-        Category.auto_id += 1
-        self.name = name
-        self.category = category
-        self.description = description
-        self.services = []
-
-    def service_count(self):
-        result = len(self.services)
-        if self.category:
-            result += self.category.service_count()
-        return result
-
-
 class ServiceFactory:
     """Порождающий паттерн Абстрактная фабрика - фабрика услуг"""
     types = {
@@ -84,6 +68,31 @@ class ServiceFactory:
     @classmethod
     def create(cls, type_, name, category, price):
         return cls.types[type_](name, category, price)
+
+
+class Category(Subject):
+    """Категория"""
+    auto_id = 0
+
+    def __init__(self, name, description, category):
+        self.id = Category.auto_id
+        Category.auto_id += 1
+        self.name = name
+        self.category = category
+        self.description = description
+        self.services = []
+        self.observers = []
+        super().__init__()
+
+
+    def add_service_to_nt(self):
+        self.notify()
+
+    def service_count(self):
+        result = len(self.services)
+        if self.category:
+            result += self.category.service_count()
+        return result
 
 
 class Engine:
@@ -110,11 +119,17 @@ class Engine:
                 return item
         raise Exception(f'Нет категории с id = {id}')
 
+    def find_category_by_name(self, name):
+        for category in self.categories:
+            if category.name == name:
+                return category
+        return None
+
     @staticmethod
     def create_service(type_, name, category, price):
         return ServiceFactory.create(type_, name, category, price)
 
-    def get_course(self, name):
+    def get_service(self, name):
         for item in self.services:
             if item.name == name:
                 return item

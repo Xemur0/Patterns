@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main_block %}
-
+{% if objects_list %}
 <div class="content_prices">
     <table>
         <tr>
@@ -39,8 +39,34 @@
         </form>
     </div>
 
+    <div class="copy">
+        {% for item in objects_list %}
+        <li>
+            {{item.name}} <span><a href="/delete_service/?name={{item.name}}">Delete</a></span>
+        </li>
+        {% endfor %}
+    </div>
+
 
 </div>
+
+{%else%}
+
+<div class="content_prices">
+    <table>
+        <tr>
+            <th>No Services</th>
+
+
+
+
+        </tr>
+    </table>
+</div>
+
+{%endif%}
+
+
 
 
 {% endblock %}
