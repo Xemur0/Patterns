@@ -2,7 +2,6 @@ import jsonpickle
 from concert_framework.templator import render_template
 
 
-
 class Observer:
 
     def update(self, subject):
