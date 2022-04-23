@@ -2,8 +2,7 @@ import jsonpickle
 from concert_framework.templator import render_template
 
 
-# поведенческий паттерн - наблюдатель
-# Курс
+
 class Observer:
 
     def update(self, subject):
