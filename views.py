@@ -2,13 +2,17 @@ from concert_framework.templator import render_template
 from helper.decorators import Routing, Debug
 from pattern.behavioral_patterns import BaseSerializer, ListView, \
     CreateView, SmsNotifier, EmailNotifier
-from pattern.creational_patterns import Engine, Logger
+from pattern.creational_patterns import Engine, Logger, MapperRegistry
+from pattern.unit_of_work import UnitOfWork
 
 site = Engine()
 routes = {}
 logger = Logger('main')
 sms_notifier = SmsNotifier()
 email_notifier = EmailNotifier()
+
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
 
 # тестовая категория, внутри можно создать услуги
 site.categories.append(site.create_category('ZVUK', 'test', 0))
@@ -60,7 +64,7 @@ class SendInfo:
 
 
 @Routing(routes=routes, url='/prices/')
-class ServiceList:
+class ServiceList(ListView):
     """Список услуг"""
 
     @Debug(name="Service List")
@@ -80,6 +84,8 @@ class ServiceList:
                                                  id=category.id)
             except KeyError:
                 return '200 OK', 'No courses have been added yet'
+
+
 
 
 @Routing(routes=routes, url='/create_service/')
@@ -151,36 +157,29 @@ class CopyService:
 
 @Routing(routes=routes, url='/category_list/')
 class CategoryListView(ListView):
-    queryset = site.categories
     template_name = 'category_list.html'
+    context_object_name = 'objects_list'
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_current_mapper('category')
+        return mapper.all()
 
 
 @Routing(routes=routes, url='/create_category/')
 class CreateCategory(CreateView):
     template_name = 'create_category.html'
 
-    def get_context_data(self):
-        context = super().get_context_data()
-        context['category_list'] = site.categories
-        context['service_list'] = site.services
-
-        return context
-
-    def create_obj(self, data):
-        category_name = data['name']
-        category_name = site.decode_value(category_name)
+    def create_obj(self, data: dict):
+        name = data['name']
+        name = site.decode_value(name)
 
         description = data['description']
         description = site.decode_value(description)
 
-        category = None
-
-        if category_name:
-            category = site.find_category_by_name(category_name)
-
-        if category == None or category not in site.categories:
-            new_category = site.create_category(category_name, description)
-            site.categories.append(new_category)
+        new_obj = site.create_category(name, description)
+        site.categories.append(new_obj)
+        new_obj.mark_new()
+        UnitOfWork.get_current().commit()
 
 
 @Routing(routes=routes, url='/api/')

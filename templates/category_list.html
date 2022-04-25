@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main_block %}
-
+{% if objects_list %}
     <div class="content_prices">
             <table>
                 <tr>
@@ -24,6 +24,21 @@
 
         </div>
 
+{%else%}
+
+<div class="content_prices">
+    <table>
+        <tr>
+            <th>No Categories</th>
+
+
+
+
+        </tr>
+    </table>
+</div>
+
+{%endif%}
 
 
 {% endblock %}
